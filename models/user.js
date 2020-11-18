@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const passportLocalMongoose = require('passport-local-mongoose');
 
 const UserSchema = new mongoose.Schema({
     name: {
@@ -23,7 +24,7 @@ const UserSchema = new mongoose.Schema({
                 validator: function (value) {
                     /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/.test(value.toLowerCase());
                 },
-                message: props => `Please ensure your email address is in the correct format.`
+                message: props => `Please ensure your email address is in the correct format. The email you entered was ${props.value}`
             },
             {
                 validator: function (value) {
@@ -41,6 +42,31 @@ UserSchema.virtual('emailConfirmation')
 })
 .set(function (value) {
     this._emailConfirmation = value;
+});
+
+UserSchema.virtual('passwordConfirmation')
+.get(function () {
+    return this._passwordConfirmation;
+})
+.set(function (value) {
+
+    UserSchema.virtual('password')
+.get(function () {
+    return this._password;
+})
+.set(function (value) {
+    if (this._passwordConfirmation !== value) {
+        this.invalidate('password', 'Password and password confirmation must match');
+    }
+    this._password = value;
+});
+
+
+    this._passwordConfirmation = value;
+});
+
+UserSchema.plugin(passportLocalMongoose, {
+    usernameField: 'email'
 });
 
 module.exports = mongoose.model('User', UserSchema);
