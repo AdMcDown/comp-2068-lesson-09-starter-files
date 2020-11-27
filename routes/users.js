@@ -6,12 +6,14 @@ const {
   destroy
 } = require('../controllers/users');
 
+const passport = require('passport');
+
 module.exports = (router) => {
-  router.get('/user', index);
+  router.get('/users', index);
   router.get('/users/:id', show);
   router.post('/users', create);
-  router.post('/users/update', update);
-  router.post('/users/destroy', destroy);
+  router.post('/users/update', passport.authenticate('jwt', { session: false }), update);
+  router.post('/users/destroy', passport.authenticate('jwt', { session: false }), destroy);
 
   return router;
 };
